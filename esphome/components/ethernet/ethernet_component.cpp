@@ -119,6 +119,11 @@ void EthernetComponent::setup() {
   phy_config.phy_addr = this->phy_addr_spi_;
   phy_config.reset_gpio_num = this->reset_pin_;
 
+  // Configure polling when interrupt not in use (and polling isn't already configured!)
+  if (w5500_config.int_gpio_num < 0 && w5500_config.poll_period_ms == 0) {
+    w5500_config.poll_period_ms = 10;   // Default to 10ms poll period.
+  }
+
   esp_eth_mac_t *mac = esp_eth_mac_new_w5500(&w5500_config, &mac_config);
 #elif defined(USE_ETHERNET_OPENETH)
   esp_eth_mac_t *mac = esp_eth_mac_new_openeth(&mac_config);
@@ -327,7 +332,7 @@ void EthernetComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "  MISO Pin: %u", this->miso_pin_);
   ESP_LOGCONFIG(TAG, "  MOSI Pin: %u", this->mosi_pin_);
   ESP_LOGCONFIG(TAG, "  CS Pin: %u", this->cs_pin_);
-  ESP_LOGCONFIG(TAG, "  IRQ Pin: %u", this->interrupt_pin_);
+  ESP_LOGCONFIG(TAG, "  IRQ Pin: %d", this->interrupt_pin_);
   ESP_LOGCONFIG(TAG, "  Reset Pin: %d", this->reset_pin_);
   ESP_LOGCONFIG(TAG, "  Clock Speed: %d MHz", this->clock_speed_ / 1000000);
 #else
